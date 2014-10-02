@@ -3,7 +3,7 @@
 // TODO the signature context probably should be a ruby instance variable
 // and separate object, instead of being allocated/freed in each method.
 
-VALUE sign_with_key(VALUE self, VALUE rb_key_name, VALUE rb_rsa_key) {
+VALUE sign_with_key(int argc, VALUE* argv, VALUE self) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
 
@@ -14,7 +14,17 @@ VALUE sign_with_key(VALUE self, VALUE rb_key_name, VALUE rb_rsa_key) {
   xmlSecDSigCtxPtr dsigCtx = NULL;
   char *keyName = NULL;
   char *rsaKey = NULL;
+  char *refUri = NULL;
   unsigned int rsaKeyLength = 0;
+
+  if (argc < 2 || argc > 3) {
+    rb_exception_result = rb_eArgError;
+    exception_message = "Expecting 2-3 arguments";
+    goto done;
+  }
+
+  VALUE rb_key_name = argv[0];
+  VALUE rb_rsa_key = argv[1];
 
   Check_Type(rb_rsa_key,  T_STRING);
   Check_Type(rb_key_name, T_STRING);
@@ -23,9 +33,17 @@ VALUE sign_with_key(VALUE self, VALUE rb_key_name, VALUE rb_rsa_key) {
   rsaKeyLength = RSTRING_LEN(rb_rsa_key);
   keyName = strndup(RSTRING_PTR(rb_key_name), RSTRING_LEN(rb_key_name) + 1);
 
+  if (argc > 2) {
+    VALUE rb_ref_uri = argv[2];
+    if (TYPE(rb_ref_uri) != T_NIL) {
+      Check_Type(rb_ref_uri, T_STRING);
+      refUri = strndup(RSTRING_PTR(rb_ref_uri), RSTRING_LEN(rb_ref_uri) + 1);
+    }
+  }
+
   // create signature template for RSA-SHA1 enveloped signature
   signNode = xmlSecTmplSignatureCreate(doc, xmlSecTransformExclC14NId,
-                                         xmlSecTransformRsaSha1Id, NULL);
+                                       xmlSecTransformRsaSha1Id, NULL);
   if (signNode == NULL) {
     rb_exception_result = rb_eSigningError;
     exception_message = "failed to create signature template";
@@ -37,7 +55,7 @@ VALUE sign_with_key(VALUE self, VALUE rb_key_name, VALUE rb_rsa_key) {
 
   // add reference
   refNode = xmlSecTmplSignatureAddReference(signNode, xmlSecTransformSha1Id,
-                                        NULL, NULL, NULL);
+                                            NULL, (const xmlChar *)refUri, NULL);
   if(refNode == NULL) {
     rb_exception_result = rb_eSigningError;
     exception_message = "failed to add reference to signature template";
@@ -106,6 +124,7 @@ done:
   }
 
   free(keyName);
+  free(refUri);
 
   if(rb_exception_result != Qnil) {
     rb_raise(rb_exception_result, "%s", exception_message);
