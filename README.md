@@ -1,5 +1,7 @@
 # nokogiri-xmlsec
 
+[![Build Status](https://travis-ci.org/omb-awong/xmlsec.svg)](https://travis-ci.org/omb-awong/xmlsec)
+
 Adds support to Ruby for encrypting, decrypting, signing and validating
 the signatures of XML documents, according to the [XML Encryption Syntax and
 Processing](http://www.w3.org/TR/xmlenc-core/) standard, by wrapping around the

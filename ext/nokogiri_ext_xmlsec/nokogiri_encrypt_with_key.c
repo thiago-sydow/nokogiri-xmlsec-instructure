@@ -22,11 +22,12 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   Data_Get_Struct(self, xmlDoc, doc);
   key       = RSTRING_PTR(rb_key);
   keyLength = RSTRING_LEN(rb_key);
+  // TODO(awong): Assert key length matches cipher block.
   keyName = StringValueCStr(rb_key_name);
 
   // create encryption template to encrypt XML file and replace 
   // its content with encryption result
-  encDataNode = xmlSecTmplEncDataCreate(doc, xmlSecTransformDes3CbcId,
+  encDataNode = xmlSecTmplEncDataCreate(doc, xmlSecTransformAes256CbcId, // xmlSecTransformDes3CbcId,
                                         NULL, xmlSecTypeEncElement, NULL, NULL);
   if(encDataNode == NULL) {
     rb_exception_result = rb_eEncryptionError;
@@ -74,7 +75,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
 
   // generate a 3DES key
   // TODO make a note of this one, it lets us pass in key type and bits from ruby
-  encCtx->encKey = xmlSecKeyGenerateByName((xmlChar *)"des", 192,
+  encCtx->encKey = xmlSecKeyGenerateByName((xmlChar *)"aes", 256,
                                            xmlSecKeyDataTypeSession);
 
   // encCtx->encKey = xmlSecKeyGenerate(xmlSecKeyDataDesId, 192,
@@ -97,7 +98,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   // add <enc:EncryptedKey/> node to the <dsig:KeyInfo/> tag to include
   // the session key
   encKeyNode = xmlSecTmplKeyInfoAddEncryptedKey(keyInfoNode,
-                                       xmlSecTransformRsaPkcs1Id, // encMethodId encryptionMethod
+                                       xmlSecTransformRsaOaepId, // encMethodId encryptionMethod
                                        NULL, // xmlChar *idAttribute
                                        NULL, // xmlChar *typeAttribute
                                        NULL  // xmlChar *recipient
