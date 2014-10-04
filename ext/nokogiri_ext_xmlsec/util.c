@@ -111,20 +111,22 @@ void storeErrorCallback(const char *file,
                         const char *errorSubject,
                         int reason,
                         const char *msg) {
+  int i = 0;
+  const char* error_msg = NULL;
+  int amt = 0;
   if (g_errorStackPos >= ERROR_STACK_SIZE) {
     // Just bail. Earlier errors are more interesting usually anyway.
     return;
   }
 
-  const char* error_msg = NULL;
-  for(int i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
+  for(i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
     if(xmlSecErrorsGetCode(i) == reason) {
       error_msg = xmlSecErrorsGetMsg(i);
       break;
     }
   }
 
-  int amt = snprintf(
+  amt = snprintf(
       &g_errorStack[g_errorStackPos],
       ERROR_STACK_SIZE - g_errorStackPos,
       "func=%s:file=%s:line=%d:obj=%s:subj=%s:error=%d:%s:%s\n",
