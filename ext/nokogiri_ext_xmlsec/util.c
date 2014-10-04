@@ -26,19 +26,18 @@ xmlSecKeysMngrPtr getKeyManager(char* keyStr, unsigned int keyLength,
   }    
   
   /* load private RSA key */
-  // key = xmlSecCryptoAppKeyLoad(key_file, xmlSecKeyDataFormatPem, NULL, NULL, NULL);
   key = xmlSecCryptoAppKeyLoadMemory((xmlSecByte *)keyStr,
                                      keyLength,
                                      xmlSecKeyDataFormatPem,
-                                     NULL, // password
-                                     NULL, NULL);
+                                     NULL, // the key file password
+                                     NULL, // the key password callback
+                                     NULL);// the user context for password callback
   if(key == NULL) {
     rb_exception_result = rb_eDecryptionError;
     exception_message = "failed to load rsa key";
     goto done;
   }
 
-  /* set key name to the file name, this is just an example! */
   if(xmlSecKeySetName(key, BAD_CAST keyName) < 0) {
     rb_exception_result = rb_eDecryptionError;
     exception_message = "failed to set key name";

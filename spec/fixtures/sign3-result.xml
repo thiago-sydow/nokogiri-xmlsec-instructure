@@ -10,14 +10,15 @@
 <Reference>
 <Transforms>
 <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
 </Transforms>
 <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
 <DigestValue>Te51eBcV78RHrLH5Dv0P24r8vW8=</DigestValue>
 </Reference>
 </SignedInfo>
-<SignatureValue>FNY3KHaZF2vVo/WKCRftatol0c22ozKn7S6Uw+GGjfAodlZwSPU5yq6rbfEBpMIi
-igz6OFpeB5fFOIJM7n428uT+tcE48AnmHvh2Dd+THs5NgGxIrogfYQGyzvX/GHox
-bmLwCVE/mRMHEG3UY67WctjP5DaSk0VCANpMnBnn+g4=</SignatureValue>
+<SignatureValue>ftlyBOII8HwiTOmXlXV35w0g1tK0MeJbCKhwKzFA0lZEdlJGvIYeu8ap2NbLpoO5
++4pptDO0Hg34EImVkzp5+1pTTMK7w8BeX0wLNbhGbPkNZ3a/5/HBBM+JTDWXkeDp
++vO1mTwJyxIbTxS8RtKFYHCh6nV9cMAk2EF6TpBPFF0=</SignatureValue>
 <KeyInfo>
 <X509Data>
 <X509Certificate>MIICLzCCAZgCCQCVuhhQ38rw0TANBgkqhkiG9w0BAQUFADBbMQswCQYDVQQGEwJV

@@ -10,14 +10,15 @@
 <Reference>
 <Transforms>
 <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
 </Transforms>
 <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
 <DigestValue>Te51eBcV78RHrLH5Dv0P24r8vW8=</DigestValue>
 </Reference>
 </SignedInfo>
-<SignatureValue>DPwu/iB8Sx21tywM69YUztjuMbKdAsfwOniDWlabk2jmEgbtwPlKFgZ9A5wdZbFj
-D+SGQrv0y0d0UV8SBV5zeAeyyX7uwpm45iEbtQjirC6oaJ5Eu9caBCRqbcxNSTdR
-yKGnO1r+dK/9T/MFANce39wBaeOUzo2qJe2128iWal4=</SignatureValue>
+<SignatureValue>eIbHmdzUt/pobUXIiDw2BHMTTvC6lLzKzmrLhE/tYaabP8EVKy1QNlnRI2NHzoRv
+ETztaqpB/TFiW8G31d74CwGxpNUaXqNK1+mJH6unyLkhb6Kc1nd8NeUjkqECjUoA
+LRXDbVEv8c1BKfzXlm8zmuFf7DmXftB0OoBIOARA2K8=</SignatureValue>
 <KeyInfo>
 <KeyName>test</KeyName>
 </KeyInfo>

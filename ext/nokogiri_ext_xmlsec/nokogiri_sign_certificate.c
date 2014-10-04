@@ -1,5 +1,14 @@
 #include "xmlsecrb.h"
 
+// Appends an xmlsig <dsig:Signature> node to document stored in |self|
+// with a signature based on the given key and cert.
+//
+// Expects 3-4 positional arguments:
+//   key_name - String with name of the rsa key. May be the empty string.
+//   rsa_key - A PEM encoded rsa key for signing.
+//   cert - The public cert to include with the signature.
+//   ref_uri - [optional] The URI attribute for the <Reference> node in the
+//             signature.
 VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
@@ -15,7 +24,6 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
   char *refUri = NULL;
   unsigned int rsaKeyLength = 0;
   unsigned int certificateLength = 0;
-
   if (argc < 3 || argc > 4) {
     rb_exception_result = rb_eArgError;
     exception_message = "Expecting 3-4 arguments";
@@ -34,7 +42,7 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
 
   rsaKey = RSTRING_PTR(rb_rsa_key);
   rsaKeyLength = RSTRING_LEN(rb_rsa_key);
-  keyName = strndup(RSTRING_PTR(rb_key_name), RSTRING_LEN(rb_key_name) + 1);
+  keyName = StringValueCStr(rb_key_name);
   certificate = RSTRING_PTR(rb_cert);
   certificateLength = RSTRING_LEN(rb_cert);
 
@@ -42,7 +50,7 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
     VALUE rb_ref_uri = argv[3];
     if (TYPE(rb_ref_uri) != T_NIL) {
       Check_Type(rb_ref_uri, T_STRING);
-      refUri = strndup(RSTRING_PTR(rb_ref_uri), RSTRING_LEN(rb_ref_uri) + 1);
+      refUri = StringValueCStr(rb_ref_uri);
     }
   }
 
@@ -143,9 +151,6 @@ done:
   if(dsigCtx != NULL) {
     xmlSecDSigCtxDestroy(dsigCtx);
   }
-
-  free(keyName);
-  free(refUri);
 
   if(rb_exception_result != Qnil) {
     rb_raise(rb_exception_result, "%s", exception_message);

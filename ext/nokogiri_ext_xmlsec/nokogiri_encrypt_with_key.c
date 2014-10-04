@@ -20,7 +20,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   Data_Get_Struct(self, xmlDoc, doc);
   key       = RSTRING_PTR(rb_key);
   keyLength = RSTRING_LEN(rb_key);
-  keyName = strndup(RSTRING_PTR(rb_key_name), RSTRING_LEN(rb_key_name) + 1);
+  keyName = StringValueCStr(rb_key_name);
 
   // create encryption template to encrypt XML file and replace 
   // its content with encryption result
@@ -139,8 +139,6 @@ done:
   if (keyManager != NULL) {
     xmlSecKeysMngrDestroy(keyManager);
   }
-
-  free(keyName);
 
   if(rb_exception_result != Qnil) {
     rb_raise(rb_exception_result, "%s", exception_message);

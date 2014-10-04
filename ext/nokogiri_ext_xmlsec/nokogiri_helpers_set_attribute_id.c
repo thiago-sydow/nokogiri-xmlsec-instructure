@@ -9,12 +9,11 @@ VALUE set_id_attribute(VALUE self, VALUE rb_attr_name) {
   xmlAttrPtr tmp = NULL;
   xmlChar *name = NULL;
   char *idName = NULL;
-  char exception_message_buffer[1024] = {'\0'};
+  char *exception_attribute_arg = NULL;
   
   Data_Get_Struct(self, xmlNode, node);
   Check_Type(rb_attr_name, T_STRING);
-  idName = strndup(RSTRING_PTR(rb_attr_name),
-                   RSTRING_LEN(rb_attr_name) + 1);
+  idName = StringValueCStr(rb_attr_name);
 
   // find pointer to id attribute
   attr = xmlHasProp(node, (const xmlChar* )idName);
@@ -28,9 +27,8 @@ VALUE set_id_attribute(VALUE self, VALUE rb_attr_name) {
   name = xmlNodeListGetString(node->doc, attr->children, 1);
   if(name == NULL) {
     rb_exception_result = rb_eRuntimeError;
-    snprintf(exception_message_buffer, sizeof(exception_message_buffer),
-             "Attribute %s has no value", idName);
-    exception_message = &exception_message_buffer[0];
+    exception_message = "has no value";
+    exception_attribute_arg = idName;
     goto done;
   }
   
@@ -38,9 +36,8 @@ VALUE set_id_attribute(VALUE self, VALUE rb_attr_name) {
   tmp = xmlGetID(node->doc, name);
   if(tmp != NULL) {
     rb_exception_result = rb_eRuntimeError;
-    snprintf(exception_message_buffer, sizeof(exception_message_buffer),
-             "Attribute %s is already an ID", idName);
-    exception_message = &exception_message_buffer[0];
+    exception_message = "is already an ID";
+    exception_attribute_arg = idName;
     goto done;
   }
   
@@ -53,10 +50,13 @@ done:
     xmlFree(name);
   }
 
-  free(idName);
-
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (exception_attribute_arg) {
+      rb_raise(rb_exception_result, "Attribute %s %s",
+          exception_attribute_arg, exception_message);
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return Qtrue;
