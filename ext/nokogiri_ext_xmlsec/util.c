@@ -1,9 +1,13 @@
 #include "util.h"
 
-xmlSecKeysMngrPtr getKeyManager(char* keyStr, unsigned int keyLength,
-                                char *keyName,
-                                VALUE* rb_exception_result_out,
-                                const char** exception_message_out) {
+#include <xmlsec/errors.h>
+
+xmlSecKeysMngrPtr createKeyManagerWithSingleKey(
+    char* keyStr,
+    unsigned int keyLength,
+    char *keyName,
+    VALUE* rb_exception_result_out,
+    const char** exception_message_out) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
   xmlSecKeysMngrPtr mngr = NULL;
@@ -68,4 +72,66 @@ done:
   *rb_exception_result_out = rb_exception_result;
   *exception_message_out = exception_message;
   return mngr;
+}
+
+xmlSecDSigCtxPtr createDSigContext(xmlSecKeysMngrPtr keyManager) {
+  xmlSecDSigCtxPtr dsigCtx = xmlSecDSigCtxCreate(keyManager);
+  if (!dsigCtx) {
+    return NULL;
+  }
+
+  // Restrict ReferenceUris to same document or empty to avoid XXE attacks.
+  dsigCtx->enabledReferenceUris = xmlSecTransformUriTypeEmpty |
+                                  xmlSecTransformUriTypeSameDocument;
+
+  return dsigCtx;
+}
+
+#define ERROR_STACK_SIZE      4096
+static char g_errorStack[ERROR_STACK_SIZE];
+static size_t g_errorStackPos;
+
+char* getXmlSecLastError() {
+  return g_errorStack;
+}
+
+int hasXmlSecLastError() {
+  return g_errorStack != 0;
+}
+
+void resetXmlSecError() {
+  g_errorStack[0] = '\0';
+  g_errorStackPos = 0;
+}
+
+void storeErrorCallback(const char *file,
+                        int line,
+                        const char *func,
+                        const char *errorObject,
+                        const char *errorSubject,
+                        int reason,
+                        const char *msg) {
+  if (g_errorStackPos >= ERROR_STACK_SIZE) {
+    // Just bail. Earlier errors are more interesting usually anyway.
+    return;
+  }
+
+  const char* error_msg = NULL;
+  for(int i = 0; (i < XMLSEC_ERRORS_MAX_NUMBER) && (xmlSecErrorsGetMsg(i) != NULL); ++i) {
+    if(xmlSecErrorsGetCode(i) == reason) {
+      error_msg = xmlSecErrorsGetMsg(i);
+      break;
+    }
+  }
+
+  int amt = snprintf(
+      &g_errorStack[g_errorStackPos],
+      ERROR_STACK_SIZE - g_errorStackPos,
+      "func=%s:file=%s:line=%d:obj=%s:subj=%s:error=%d:%s:%s\n",
+      func, file, line, errorObject, errorSubject, reason,
+      error_msg ? error_msg : "", msg);
+
+  if (amt > 0) {
+    g_errorStackPos += amt;
+  }
 }

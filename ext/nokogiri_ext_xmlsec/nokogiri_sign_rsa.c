@@ -1,4 +1,5 @@
 #include "xmlsecrb.h"
+#include "util.h"
 
 // Appends an xmlsig <dsig:Signature> node to document stored in |self|
 // with a signature based on the given bare rsa key and keyname.
@@ -21,6 +22,8 @@ VALUE sign_with_key(int argc, VALUE* argv, VALUE self) {
   char *rsaKey = NULL;
   char *refUri = NULL;
   unsigned int rsaKeyLength = 0;
+
+  resetXmlSecError();
 
   if (argc < 2 || argc > 3) {
     rb_exception_result = rb_eArgError;
@@ -95,7 +98,7 @@ VALUE sign_with_key(int argc, VALUE* argv, VALUE self) {
   }
 
   // create signature context, we don't need keys manager in this example
-  dsigCtx = xmlSecDSigCtxCreate(NULL);
+  dsigCtx = createDSigContext(NULL);
   if(dsigCtx == NULL) {
     rb_exception_result = rb_eSigningError;
     exception_message = "failed to create signature context";
@@ -135,7 +138,12 @@ done:
   }
 
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (hasXmlSecLastError()) {
+      rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+               getXmlSecLastError());
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return Qnil;

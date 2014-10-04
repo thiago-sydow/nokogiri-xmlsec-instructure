@@ -16,7 +16,6 @@
 #include <xmlsec/xmlenc.h>
 #include <xmlsec/templates.h>
 #include <xmlsec/crypto.h>
-#include <xmlsec/dl.h>
 
 VALUE sign_with_key(int argc, VALUE* argv, VALUE self);
 VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self);

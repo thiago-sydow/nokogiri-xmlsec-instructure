@@ -1,8 +1,12 @@
 #include "xmlsecrb.h"
+#include "util.h"
 
-static xmlSecKeysMngrPtr getKeyManager(VALUE rb_certs,
-                                       VALUE* rb_exception_result_out,
-                                       const char** exception_message_out) {
+// Constructs a xmlSecKeysMngrPtr and adds all the certs included in |rb_certs|
+// array as trusted certificates.
+static xmlSecKeysMngrPtr createKeyManagerWithRbCertArray(
+    VALUE rb_certs,
+    VALUE* rb_exception_result_out,
+    const char** exception_message_out) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
 
@@ -73,6 +77,8 @@ VALUE verify_signature_with_certificates(VALUE self, VALUE rb_certs) {
   xmlSecKeysMngrPtr keyManager = NULL;
   VALUE result = Qfalse;
 
+  resetXmlSecError();
+
   Check_Type(rb_certs, T_ARRAY);
   Data_Get_Struct(self, xmlDoc, doc);
 
@@ -84,15 +90,15 @@ VALUE verify_signature_with_certificates(VALUE self, VALUE rb_certs) {
     goto done;
   }
 
-  keyManager = getKeyManager(rb_certs, &rb_exception_result,
-                             &exception_message);
+  keyManager = createKeyManagerWithRbCertArray(rb_certs, &rb_exception_result,
+                                               &exception_message);
   if (keyManager == NULL) {
     // Propagate exception.
     goto done;
   }
 
-  // create signature context, we don't need keys manager in this example
-  dsigCtx = xmlSecDSigCtxCreate(keyManager);
+  // Create signature context.
+  dsigCtx = createDSigContext(keyManager);
   if(dsigCtx == NULL) {
     rb_exception_result = rb_eVerificationError;
     exception_message = "failed to create signature context";
@@ -120,7 +126,12 @@ done:
   }
 
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (hasXmlSecLastError()) {
+      rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+               getXmlSecLastError());
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return result;

@@ -43,8 +43,8 @@ describe "signing and verifying signatures:" do
       specify { subject.verify_with(certs: [fixture('cert/server.crt')]).should == true }
       specify { subject.verify_with(certificates: [fixture('cert/server.crt')]).should == true }
 
-      it 'should verify using system certificates' do
-        pending("testing system certs requires admin privs. Read code.")
+      skip 'should verify using system certificates' do
+#        pending("testing system certs requires admin privs. Read code.")
         # subject.verify_signature.should == true -- sort of.
         unless subject.verify_signature
           raise <<-end_error

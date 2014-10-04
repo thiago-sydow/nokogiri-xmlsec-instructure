@@ -1,4 +1,5 @@
 #include "xmlsecrb.h"
+#include "util.h"
 
 VALUE verify_signature_with_rsa_key(VALUE self, VALUE rb_rsa_key) {
   VALUE rb_exception_result = Qnil;
@@ -10,6 +11,8 @@ VALUE verify_signature_with_rsa_key(VALUE self, VALUE rb_rsa_key) {
   char *rsa_key = NULL;
   unsigned int rsa_key_length = 0;
   VALUE result = Qfalse;
+
+  resetXmlSecError();
 
   Data_Get_Struct(self, xmlDoc, doc);
   Check_Type(rb_rsa_key,  T_STRING);
@@ -25,7 +28,7 @@ VALUE verify_signature_with_rsa_key(VALUE self, VALUE rb_rsa_key) {
   }
 
   // create signature context, we don't need keys manager in this example
-  dsigCtx = xmlSecDSigCtxCreate(NULL);
+  dsigCtx = createDSigContext(NULL);
   if(dsigCtx == NULL) {
     rb_exception_result = rb_eVerificationError;
     exception_message = "failed to create signature context";
@@ -61,7 +64,12 @@ done:
   }
 
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (hasXmlSecLastError()) {
+      rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+               getXmlSecLastError());
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return result;

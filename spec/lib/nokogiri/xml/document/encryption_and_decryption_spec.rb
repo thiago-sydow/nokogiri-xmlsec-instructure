@@ -12,8 +12,8 @@ describe "encryption and decryption:" do
     end
 
     # it generates a new key every time so will never match the fixture
-    specify { subject.to_s.should_not == @original }
-    specify { subject.to_s.should_not =~ /Hello.*World/i }
+    specify { expect(subject.to_s == @original).to be_falsey }
+    specify { expect(subject.to_s =~ /Hello.*World/i).to be_falsey }
     # specify { subject.to_s.should == fixture('encrypt2-result.xml') }
 
     describe 'decrypting with the RSA private key' do

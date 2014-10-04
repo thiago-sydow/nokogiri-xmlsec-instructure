@@ -13,6 +13,8 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   char *keyName = NULL;
   unsigned int keyLength = 0;
 
+  resetXmlSecError();
+
   Check_Type(rb_key,      T_STRING);
   Check_Type(rb_key_name, T_STRING);
   Data_Get_Struct(self, xmlDoc, doc);
@@ -28,8 +30,9 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
       goto done;      
   }
 
-  keyManager = getKeyManager(key, keyLength, keyName, &rb_exception_result,
-                             &exception_message);
+  keyManager = createKeyManagerWithSingleKey(key, keyLength, keyName,
+                                             &rb_exception_result,
+                                             &exception_message);
   if (keyManager == NULL) {
     // Propagate the exception.
     goto done;
@@ -67,7 +70,12 @@ done:
   }
 
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (hasXmlSecLastError()) {
+      rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+               getXmlSecLastError());
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return Qnil;

@@ -1,4 +1,5 @@
 #include "xmlsecrb.h"
+#include "util.h"
 
 VALUE set_id_attribute(VALUE self, VALUE rb_attr_name) {
   VALUE rb_exception_result = Qnil;
@@ -11,6 +12,8 @@ VALUE set_id_attribute(VALUE self, VALUE rb_attr_name) {
   char *idName = NULL;
   char *exception_attribute_arg = NULL;
   
+  resetXmlSecError();
+
   Data_Get_Struct(self, xmlNode, node);
   Check_Type(rb_attr_name, T_STRING);
   idName = StringValueCStr(rb_attr_name);
@@ -52,10 +55,20 @@ done:
 
   if(rb_exception_result != Qnil) {
     if (exception_attribute_arg) {
-      rb_raise(rb_exception_result, "Attribute %s %s",
-          exception_attribute_arg, exception_message);
+      if (hasXmlSecLastError()) {
+        rb_raise(rb_exception_result, "Attribute %s %s, XmlSec error: %s",
+            exception_attribute_arg, exception_message, getXmlSecLastError());
+      } else {
+        rb_raise(rb_exception_result, "Attribute %s %s",
+            exception_attribute_arg, exception_message);
+      }
     } else {
-      rb_raise(rb_exception_result, "%s", exception_message);
+      if (hasXmlSecLastError()) {
+        rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+                 getXmlSecLastError());
+      } else {
+        rb_raise(rb_exception_result, "%s", exception_message);
+      }
     }
   }
 

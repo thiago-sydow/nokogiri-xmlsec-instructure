@@ -1,4 +1,5 @@
 #include "xmlsecrb.h"
+#include "util.h"
 
 static int addRubyKeyToManager(VALUE rb_key, VALUE rb_value, VALUE rb_manager) {
   xmlSecKeysMngrPtr keyManager = (xmlSecKeysMngrPtr)rb_manager;
@@ -39,9 +40,14 @@ static int addRubyKeyToManager(VALUE rb_key, VALUE rb_value, VALUE rb_manager) {
   return ST_CONTINUE;
 }
 
-static xmlSecKeysMngrPtr getKeyManager(VALUE rb_hash,
-                                       VALUE* rb_exception_result_out,
-                                       const char** exception_message_out) {
+// Constructs a xmlSecKeysMngr and adds all the named to key mappings
+// specified by the |rb_hash| to the key manager.
+//
+// Caller takes ownership. Free with xmlSecKeysMngrDestroy().
+static xmlSecKeysMngrPtr createKeyManagerFromNamedKeys(
+    VALUE rb_hash,
+    VALUE* rb_exception_result_out,
+    const char** exception_message_out) {
   xmlSecKeysMngrPtr keyManager = xmlSecKeysMngrCreate();
   if (keyManager == NULL) return NULL;
   if (xmlSecCryptoAppDefaultKeysMngrInit(keyManager) < 0) {
@@ -66,6 +72,8 @@ VALUE verify_signature_with_named_keys(VALUE self, VALUE rb_hash) {
   xmlSecKeysMngrPtr keyManager = NULL;
   VALUE result = Qfalse;
 
+  resetXmlSecError();
+
   Check_Type(rb_hash, T_HASH);
   Data_Get_Struct(self, xmlDoc, doc);
 
@@ -77,15 +85,15 @@ VALUE verify_signature_with_named_keys(VALUE self, VALUE rb_hash) {
     goto done;
   }
 
-  keyManager = getKeyManager(rb_hash, &rb_exception_result,
-                             &exception_message);
+  keyManager = createKeyManagerFromNamedKeys(rb_hash, &rb_exception_result,
+                                             &exception_message);
   if (keyManager == NULL) {
     // Propagate exception.
     goto done;
   }
 
   // create signature context, we don't need keys manager in this example
-  dsigCtx = xmlSecDSigCtxCreate(keyManager);
+  dsigCtx = createDSigContext(keyManager);
   if(dsigCtx == NULL) {
     rb_exception_result = rb_eVerificationError;
     exception_message = "failed to create signature context";
@@ -113,7 +121,12 @@ done:
   }
 
   if(rb_exception_result != Qnil) {
-    rb_raise(rb_exception_result, "%s", exception_message);
+    if (hasXmlSecLastError()) {
+      rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,
+               getXmlSecLastError());
+    } else {
+      rb_raise(rb_exception_result, "%s", exception_message);
+    }
   }
 
   return result;
