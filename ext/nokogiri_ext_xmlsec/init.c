@@ -9,6 +9,7 @@
 #include <libxslt/security.h>
 #endif /* XMLSEC_NO_XSLT */
 
+EXTENSION_EXPORT
 void Init_nokogiri_ext_xmlsec() {
 #ifndef XMLSEC_NO_XSLT
     xsltSecurityPrefsPtr xsltSecPrefs = NULL;

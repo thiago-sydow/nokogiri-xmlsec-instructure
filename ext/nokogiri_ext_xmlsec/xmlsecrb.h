@@ -17,6 +17,9 @@
 #include <xmlsec/templates.h>
 #include <xmlsec/crypto.h>
 
+// TODO(awong): Support non-gcc and non-clang compilers.
+#define EXTENSION_EXPORT __attribute__((visibility("default")))
+
 VALUE sign_with_key(int argc, VALUE* argv, VALUE self);
 VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self);
 VALUE verify_signature_with_rsa_key(VALUE self, VALUE rb_rsa_key);

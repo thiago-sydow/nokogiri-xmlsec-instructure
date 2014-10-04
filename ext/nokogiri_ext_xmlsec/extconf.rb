@@ -6,6 +6,8 @@ end
 
 barf unless have_header('ruby.h')
 
+$CFLAGS << " -fvisibility=hidden -fvisibility-inlines-hidden"
+
 if pkg_config('xmlsec1-openssl')
   # HACK 'openssl' is escaped too many times, I don't know why
   if $CFLAGS =~ /\-DXMLSEC_CRYPTO=\\\\\\"openssl\\\\\\"/
