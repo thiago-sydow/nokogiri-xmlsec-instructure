@@ -21,7 +21,7 @@ describe "encryption and decryption:" do
         subject.decrypt! key: fixture('rsa.pem'), name: 'test'
       end
 
-      specify { subject.to_s.should == fixture('sign2-doc.xml') }
+      specify { expect(subject.to_s == fixture('sign2-doc.xml')).to be_truthy }
     end
   end
 

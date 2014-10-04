@@ -9,20 +9,20 @@ describe "signing and verifying signatures:" do
     before { subject.sign! key: fixture('rsa.pem'), name: 'test' }
 
     it 'should produce a signed document' do
-      subject.to_s.should == fixture('sign2-result.xml')
+      expect(subject.to_s == fixture('sign2-result.xml')).to be_truthy
     end
 
     describe 'verifying the document with a single public key' do
       it 'should be valid' do
-        subject.verify_with(key: fixture('rsa.pub')).should == true
+        expect(subject.verify_with(key: fixture('rsa.pub'))).to be_truthy
       end
     end
 
     describe 'verifying the document with a set of keys' do
       it 'should be valid' do
-        subject.verify_with({
+        expect(subject.verify_with({
           'test' => fixture('rsa.pub')
-        }).should == true
+        })).to be_truthy
       end
     end
   end
@@ -35,17 +35,22 @@ describe "signing and verifying signatures:" do
     end
 
     it 'should produce a signed document' do
-      subject.to_s.should == fixture('sign3-result.xml')
+      expect(subject.to_s == fixture('sign3-result.xml')).to be_truthy
     end
 
     describe 'verifying the document with an array of X509 certificates' do
-      specify { subject.verify_with(x509: [fixture('cert/server.crt')]).should == true }
-      specify { subject.verify_with(certs: [fixture('cert/server.crt')]).should == true }
-      specify { subject.verify_with(certificates: [fixture('cert/server.crt')]).should == true }
+      specify do
+        expect(subject.verify_with(x509: [fixture('cert/server.crt')])).to be_truthy
+      end
+      specify do
+        expect(subject.verify_with(certs: [fixture('cert/server.crt')])).to be_truthy
+      end
+      specify do
+        expect(subject.verify_with(certificates: [fixture('cert/server.crt')])).to be_truthy
+      end
 
-      skip 'should verify using system certificates' do
-#        pending("testing system certs requires admin privs. Read code.")
-        # subject.verify_signature.should == true -- sort of.
+      it 'should verify using system certificates' do
+        pending("Testing system certs requires admin privs. Read exception message in code.")
         unless subject.verify_signature
           raise <<-end_error
             Could not use system certificates to verify the signature.
@@ -62,9 +67,15 @@ describe "signing and verifying signatures:" do
     end
 
     describe 'verifying the document with one X509 certificate' do
-      specify { subject.verify_with(x509: fixture('cert/server.crt')).should == true }
-      specify { subject.verify_with(cert: fixture('cert/server.crt')).should == true }
-      specify { subject.verify_with(certificate: fixture('cert/server.crt')).should == true }
+      specify do
+        expect(subject.verify_with(x509: fixture('cert/server.crt'))).to be_truthy
+      end
+      specify do
+        expect(subject.verify_with(cert: fixture('cert/server.crt'))).to be_truthy
+      end
+      specify do
+        expect(subject.verify_with(certificate: fixture('cert/server.crt'))).to be_truthy
+      end
     end
   end
 
