@@ -60,7 +60,7 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
 
   // create signature template for RSA-SHA1 enveloped signature
   signNode = xmlSecTmplSignatureCreate(doc, xmlSecTransformExclC14NId,
-                                       xmlSecTransformRsaSha1Id, NULL);
+                                       xmlSecTransformRsaSha256Id, NULL);
   if (signNode == NULL) {
     rb_exception_result = rb_eSigningError;
     exception_message = "failed to create signature template";
@@ -71,7 +71,7 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
   xmlAddChild(xmlDocGetRootElement(doc), signNode);
 
   // add reference
-  refNode = xmlSecTmplSignatureAddReference(signNode, xmlSecTransformSha1Id,
+  refNode = xmlSecTmplSignatureAddReference(signNode, xmlSecTransformSha256Id,
                                             NULL, (const xmlChar *)refUri, NULL);
   if(refNode == NULL) {
     rb_exception_result = rb_eSigningError;
