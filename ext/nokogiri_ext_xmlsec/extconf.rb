@@ -13,9 +13,6 @@ if $CFLAGS =~ /\-DXMLSEC_CRYPTO=\\\\\\"openssl\\\\\\"/
     '-DXMLSEC_CRYPTO=\\"openssl\\"'
 end
 
-$CFLAGS += " " << `pkg-config --cflags xmlsec1-openssl`.strip
-$CXXFLAGS = " " << `pkg-config --cflags xmlsec1-openssl`.strip
-$libs = " " << `pkg-config --libs-only-l xmlsec1-openssl`.strip
-
+pkg_config('xmlsec1-openssl')
 have_library 'xmlsec1-openssl'
 create_makefile('nokogiri_ext_xmlsec')
