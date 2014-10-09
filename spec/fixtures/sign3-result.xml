@@ -6,19 +6,19 @@
 <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
 <SignedInfo>
 <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-<SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+<SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
 <Reference>
 <Transforms>
 <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
 <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
 </Transforms>
-<DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-<DigestValue>Te51eBcV78RHrLH5Dv0P24r8vW8=</DigestValue>
+<DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<DigestValue>Gx8CGUsbi2qvBLd15VCmwELbDMND8F4vY3jPOc7/FJ0=</DigestValue>
 </Reference>
 </SignedInfo>
-<SignatureValue>ftlyBOII8HwiTOmXlXV35w0g1tK0MeJbCKhwKzFA0lZEdlJGvIYeu8ap2NbLpoO5
-+4pptDO0Hg34EImVkzp5+1pTTMK7w8BeX0wLNbhGbPkNZ3a/5/HBBM+JTDWXkeDp
-+vO1mTwJyxIbTxS8RtKFYHCh6nV9cMAk2EF6TpBPFF0=</SignatureValue>
+<SignatureValue>TGJ9fCzjppp3LgG4fiBJx+0R34wRa7il9XKKZ+kkOAdKkcW0PIAYKmjn0Tn8krGd
+Gw6qtFFqjdohXfhkKmajXAFunEtd3J0kHFkf3obIwRB1qdsYmKXVFxUx3GqcIlph
+vt9v/9FC12JAxwAiJXHuY2xN5uo3xSDER4+tCCy3/AI=</SignatureValue>
 <KeyInfo>
 <X509Data>
 <X509Certificate>MIICLzCCAZgCCQCVuhhQ38rw0TANBgkqhkiG9w0BAQUFADBbMQswCQYDVQQGEwJV

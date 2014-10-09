@@ -9,7 +9,7 @@ describe "signing and verifying signatures:" do
     before { subject.sign! key: fixture('rsa.pem'), name: 'test' }
 
     it 'should produce a signed document' do
-      expect(subject.to_s == fixture('sign2-result.xml')).to be_truthy
+      expect(subject.to_s).to eql(fixture('sign2-result.xml'))
     end
 
     describe 'verifying the document with a single public key' do
@@ -35,7 +35,7 @@ describe "signing and verifying signatures:" do
     end
 
     it 'should produce a signed document' do
-      expect(subject.to_s == fixture('sign3-result.xml')).to be_truthy
+      expect(subject.to_s).to eql(fixture('sign3-result.xml'))
     end
 
     describe 'verifying the document with an array of X509 certificates' do
