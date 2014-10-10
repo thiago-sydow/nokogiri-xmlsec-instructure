@@ -71,7 +71,7 @@ VALUE sign_with_certificate(int argc, VALUE* argv, VALUE self) {
   xmlAddChild(xmlDocGetRootElement(doc), signNode);
 
   // add reference
-  refNode = xmlSecTmplSignatureAddReference(signNode, xmlSecTransformSha256Id,
+  refNode = xmlSecTmplSignatureAddReference(signNode, xmlSecTransformSha1Id,
                                             NULL, (const xmlChar *)refUri, NULL);
   if(refNode == NULL) {
     rb_exception_result = rb_eSigningError;
