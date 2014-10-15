@@ -96,7 +96,7 @@ char* getXmlSecLastError() {
 }
 
 int hasXmlSecLastError() {
-  return g_errorStack != 0;
+  return g_errorStack[0] != '\0';
 }
 
 void resetXmlSecError() {
