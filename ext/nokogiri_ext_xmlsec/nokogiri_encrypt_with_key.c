@@ -98,7 +98,8 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   // add <enc:EncryptedKey/> node to the <dsig:KeyInfo/> tag to include
   // the session key
   encKeyNode = xmlSecTmplKeyInfoAddEncryptedKey(keyInfoNode,
-                                       xmlSecTransformRsaPkcs1Id, // encMethodId encryptionMethod
+                                       // Alternate old padding: xmlSecTransformRsaPkcs1Id
+                                       xmlSecTransformRsaOaepId, // encMethodId encryptionMethod
                                        NULL, // xmlChar *idAttribute
                                        NULL, // xmlChar *typeAttribute
                                        NULL  // xmlChar *recipient
