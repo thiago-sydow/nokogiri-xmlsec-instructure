@@ -1,7 +1,16 @@
 #include "xmlsecrb.h"
+#include "options.h"
 #include "util.h"
 
-VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
+// Encrypes the XML Document document using XMLEnc.
+//
+// Expects 3 positional arguments:
+//   key_name - String with name of the rsa key. May be the empty string.
+//   rb_rsa_key - A PEM encoded rsa key for signing.
+//   rb_opts - An ruby hash that configures the encryption options.
+//             See XmlEncOptions struct for possible values.
+VALUE encrypt_with_key(VALUE self, VALUE rb_rsa_key_name, VALUE rb_rsa_key,
+                       VALUE rb_opts) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
 
@@ -17,18 +26,50 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
 
   resetXmlSecError();
 
-  Check_Type(rb_key,      T_STRING);
-  Check_Type(rb_key_name, T_STRING);
+  Check_Type(rb_rsa_key,      T_STRING);
+  Check_Type(rb_rsa_key_name, T_STRING);
+  Check_Type(rb_opts, T_HASH);
+
+  key       = RSTRING_PTR(rb_rsa_key);
+  keyLength = RSTRING_LEN(rb_rsa_key);
+  keyName = StringValueCStr(rb_rsa_key_name);
+
+  XmlEncOptions options;
+  if (!GetXmlEncOptions(rb_opts, &options, &rb_exception_result,
+                        &exception_message)) {
+    goto done;
+  }
+
   Data_Get_Struct(self, xmlDoc, doc);
-  key       = RSTRING_PTR(rb_key);
-  keyLength = RSTRING_LEN(rb_key);
-  // TODO(awong): Assert key length matches cipher block.
-  keyName = StringValueCStr(rb_key_name);
 
   // create encryption template to encrypt XML file and replace 
   // its content with encryption result
-  encDataNode = xmlSecTmplEncDataCreate(doc, xmlSecTransformAes128CbcId, // xmlSecTransformDes3CbcId,
-                                        NULL, xmlSecTypeEncElement, NULL, NULL);
+  xmlSecTransformId block_encryption = 0;
+  const char* key_name = NULL;
+  switch (options.block_encryption) {
+    case AES128_CBC:
+      block_encryption = xmlSecTransformAes128CbcId;
+      key_name = "aes";
+      break;
+
+    case AES192_CBC:
+      block_encryption = xmlSecTransformAes192CbcId;
+      key_name = "aes";
+      break;
+
+    case AES256_CBC:
+      block_encryption = xmlSecTransformAes256CbcId;
+      key_name = "aes";
+      break;
+
+    case TRIPLEDES_CBC:
+      block_encryption = xmlSecTransformDes3CbcId;
+      key_name = "des";
+      break;
+  }
+
+  encDataNode = xmlSecTmplEncDataCreate(doc, block_encryption, NULL,
+                                        xmlSecTypeEncElement, NULL, NULL);
   if(encDataNode == NULL) {
     rb_exception_result = rb_eEncryptionError;
     exception_message = "failed to create encryption template";
@@ -57,10 +98,10 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
     goto done;
   }
 
-  keyManager = createKeyManagerWithSingleKey(key, keyLength, keyName,
-                                             &rb_exception_result,
-                                             &exception_message);
-  if (keyManager == NULL) {
+  if ((keyManager = createKeyManagerWithSingleKey(
+          key, keyLength, keyName,
+          &rb_exception_result,
+          &exception_message)) == NULL) {
     // Propagate the exception.
     goto done;
   }
@@ -73,33 +114,37 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
     goto done;
   }
 
-  // generate a 3DES key
-  // TODO make a note of this one, it lets us pass in key type and bits from ruby
-  encCtx->encKey = xmlSecKeyGenerateByName((xmlChar *)"aes", 128,
+  // Generate the symmetric key.
+  encCtx->encKey = xmlSecKeyGenerateByName(BAD_CAST key_name, options.key_bits,
                                            xmlSecKeyDataTypeSession);
 
-  // encCtx->encKey = xmlSecKeyGenerate(xmlSecKeyDataDesId, 192,
-  //                                    xmlSecKeyDataTypeSession);
-  // encCtx->encKey = xmlSecAppCryptoKeyGenerate(xmlSecAppCmdLineParamGetString(&sessionKeyParam),
-  //                               NULL, xmlSecKeyDataTypeSession);
   if(encCtx->encKey == NULL) {
     rb_exception_result = rb_eDecryptionError;
-    exception_message = "failed to generate session des key";
+    exception_message = "failed to generate session key";
     goto done;
   }
 
-  // set key name
+  // Set key name.
   if(xmlSecKeySetName(encCtx->encKey, (xmlSecByte *)keyName) < 0) {
     rb_exception_result = rb_eEncryptionError;
     exception_message = "failed to set key name";
     goto done;
   }
 
-  // add <enc:EncryptedKey/> node to the <dsig:KeyInfo/> tag to include
-  // the session key
+  // Add <enc:EncryptedKey/> node to the <dsig:KeyInfo/> tag to include
+  // the session key.
+  xmlSecTransformId key_transport = 0;
+  switch (options.key_transport) {
+    case RSA1_5:
+      key_transport = xmlSecTransformRsaPkcs1Id;
+      break;
+
+    case RSA_OAEP_MGF1P:
+      key_transport = xmlSecTransformRsaOaepId;
+      break;
+  }
   encKeyNode = xmlSecTmplKeyInfoAddEncryptedKey(keyInfoNode,
-                                       // Alternate old padding: xmlSecTransformRsaPkcs1Id
-                                       xmlSecTransformRsaOaepId, // encMethodId encryptionMethod
+                                       key_transport, // encMethodId encryptionMethod
                                        NULL, // xmlChar *idAttribute
                                        NULL, // xmlChar *typeAttribute
                                        NULL  // xmlChar *recipient

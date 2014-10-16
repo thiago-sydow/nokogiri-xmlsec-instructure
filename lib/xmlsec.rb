@@ -85,7 +85,7 @@ class Nokogiri::XML::Document
   #
   def encrypt! opts
     if opts[:key]
-      encrypt_with_key opts[:name].to_s, opts[:key]
+      encrypt_with_key opts[:name].to_s, opts[:key], opts.select { |key, _| key != :key && key != :name }
     else
       raise "public :key is required for encryption"
     end
