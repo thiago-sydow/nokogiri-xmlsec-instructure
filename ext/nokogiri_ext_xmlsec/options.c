@@ -2,6 +2,12 @@
 
 #include "common.h"
 
+#if (XMLSEC_VERSION_MAJOR > 1) || (XMLSEC_VERSION_MAJOR == 1 && (XMLSEC_VERSION_MINOR > 2 || (XMLSEC_VERSION_MINOR == 2 && XMLSEC_VERSION_SUBMINOR >= 20)))
+# define HAS_ECDSA 1
+#else
+# define HAS_ECDSA 0
+#endif
+
 // Key Transport Strings.
 static const char RSA1_5[] = "rsa-1_5";
 static const char RSA_OAEP_MGF1P[] = "rsa-oaep-mgf1p";
@@ -19,13 +25,16 @@ static const char RSA_SHA224[] = "rsa-sha224";
 static const char RSA_SHA256[] = "rsa-sha256";
 static const char RSA_SHA384[] = "rsa-sha384";
 static const char RSA_SHA512[] = "rsa-sha512";
+static const char DSA_SHA1[] = "dsa-sha1";
+
+#if HAS_ECDSA
 static const char ECDSA_SHA1[] = "ecdsa-sha1";
 static const char ECDSA_SHA224[] = "ecdsa-sha224";
 static const char ECDSA_SHA256[] = "ecdsa-sha256";
 static const char ECDSA_SHA384[] = "ecdsa-sha384";
 static const char ECDSA_SHA512[] = "ecdsa-sha512";
-static const char DSA_SHA1[] = "dsa-sha1";
 static const char DSA_SHA256[] = "dsa-sha256";
+#endif  // HAS_ECDSA
 
 // Supported digest algorithms taken from #6 of
 // http://www.w3.org/TR/xmldsig-core1/
@@ -108,7 +117,10 @@ xmlSecTransformId GetSignatureMethod(VALUE rb_signature_alg,
     return xmlSecTransformRsaSha384Id;
   } else if (strncmp(RSA_SHA512, signatureAlgorithm, signatureAlgorithmLength) == 0) {
     return xmlSecTransformRsaSha512Id;
-  } else if (strncmp(ECDSA_SHA1, signatureAlgorithm, signatureAlgorithmLength) == 0) {
+
+  }
+#if HAS_ECDSA
+  else if (strncmp(ECDSA_SHA1, signatureAlgorithm, signatureAlgorithmLength) == 0) {
     return xmlSecTransformEcdsaSha1Id;
   } else if (strncmp(ECDSA_SHA224, signatureAlgorithm, signatureAlgorithmLength) == 0) {
     return xmlSecTransformEcdsaSha224Id;
@@ -123,6 +135,7 @@ xmlSecTransformId GetSignatureMethod(VALUE rb_signature_alg,
   } else if (strncmp(DSA_SHA256, signatureAlgorithm, signatureAlgorithmLength) == 0) {
     return xmlSecTransformDsaSha256Id;
   }
+#endif  // HAS_ECDSA
 
   *rb_exception_result = rb_eArgError;
   *exception_message = "Unknown :signature_alg";
