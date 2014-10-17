@@ -8,6 +8,8 @@ describe "unsafe xml guards:" do
         doc.sign!(cert: fixture('cert/server.crt'),
                   key: fixture('cert/server.key.decrypted'),
                   name: 'test',
+                  signature_alg: 'rsa-sha256',
+                  digest_alg: 'sha256',
                   uri: "#{fixture_path("pwned.xml")}")}.to raise_error(
           XMLSec::SigningError, /error=33:invalid URI type/)
     end
@@ -18,6 +20,8 @@ describe "unsafe xml guards:" do
         doc.sign!(cert: fixture('cert/server.crt'),
                   key: fixture('cert/server.key.decrypted'),
                   name: 'test',
+                  signature_alg: 'rsa-sha256',
+                  digest_alg: 'sha256',
                   uri: "file://#{fixture_path("pwned.xml")}")}.to raise_error(
           XMLSec::SigningError, /error=33:invalid URI type/)
     end
@@ -28,6 +32,8 @@ describe "unsafe xml guards:" do
         doc.sign!(cert: fixture('cert/server.crt'),
                   key: fixture('cert/server.key.decrypted'),
                   name: 'test',
+                  signature_alg: 'rsa-sha256',
+                  digest_alg: 'sha256',
                   uri: "http://www.w3.org/2001/XMLSchema.xsd")}.to raise_error(
           XMLSec::SigningError, /error=33:invalid URI type/)
     end
@@ -37,6 +43,8 @@ describe "unsafe xml guards:" do
       doc.sign!(cert: fixture('cert/server.crt'),
                 key: fixture('cert/server.key.decrypted'),
                 name: 'test',
+                signature_alg: 'rsa-sha256',
+                digest_alg: 'sha256',
                 uri: "")
     end
 
@@ -45,6 +53,8 @@ describe "unsafe xml guards:" do
       doc.sign!(cert: fixture('cert/server.crt'),
                 key: fixture('cert/server.key.decrypted'),
                 name: 'test',
+                signature_alg: 'rsa-sha256',
+                digest_alg: 'sha256',
                 uri: "#some_frackin_id")
     end
   end

@@ -5,7 +5,7 @@
 // Encrypes the XML Document document using XMLEnc.
 //
 // Expects 3 positional arguments:
-//   key_name - String with name of the rsa key. May be the empty string.
+//   rb_rsa_key_name - String with name of the rsa key. May be the empty.
 //   rb_rsa_key - A PEM encoded rsa key for signing.
 //   rb_opts - An ruby hash that configures the encryption options.
 //             See XmlEncOptions struct for possible values.
@@ -44,31 +44,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_rsa_key_name, VALUE rb_rsa_key,
 
   // create encryption template to encrypt XML file and replace 
   // its content with encryption result
-  xmlSecTransformId block_encryption = 0;
-  const char* key_name = NULL;
-  switch (options.block_encryption) {
-    case AES128_CBC:
-      block_encryption = xmlSecTransformAes128CbcId;
-      key_name = "aes";
-      break;
-
-    case AES192_CBC:
-      block_encryption = xmlSecTransformAes192CbcId;
-      key_name = "aes";
-      break;
-
-    case AES256_CBC:
-      block_encryption = xmlSecTransformAes256CbcId;
-      key_name = "aes";
-      break;
-
-    case TRIPLEDES_CBC:
-      block_encryption = xmlSecTransformDes3CbcId;
-      key_name = "des";
-      break;
-  }
-
-  encDataNode = xmlSecTmplEncDataCreate(doc, block_encryption, NULL,
+  encDataNode = xmlSecTmplEncDataCreate(doc, options.block_encryption, NULL,
                                         xmlSecTypeEncElement, NULL, NULL);
   if(encDataNode == NULL) {
     rb_exception_result = rb_eEncryptionError;
@@ -115,7 +91,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_rsa_key_name, VALUE rb_rsa_key,
   }
 
   // Generate the symmetric key.
-  encCtx->encKey = xmlSecKeyGenerateByName(BAD_CAST key_name, options.key_bits,
+  encCtx->encKey = xmlSecKeyGenerateByName(BAD_CAST options.key_type, options.key_bits,
                                            xmlSecKeyDataTypeSession);
 
   if(encCtx->encKey == NULL) {
@@ -133,18 +109,8 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_rsa_key_name, VALUE rb_rsa_key,
 
   // Add <enc:EncryptedKey/> node to the <dsig:KeyInfo/> tag to include
   // the session key.
-  xmlSecTransformId key_transport = 0;
-  switch (options.key_transport) {
-    case RSA1_5:
-      key_transport = xmlSecTransformRsaPkcs1Id;
-      break;
-
-    case RSA_OAEP_MGF1P:
-      key_transport = xmlSecTransformRsaOaepId;
-      break;
-  }
   encKeyNode = xmlSecTmplKeyInfoAddEncryptedKey(keyInfoNode,
-                                       key_transport, // encMethodId encryptionMethod
+                                       options.key_transport, // encMethodId encryptionMethod
                                        NULL, // xmlChar *idAttribute
                                        NULL, // xmlChar *typeAttribute
                                        NULL  // xmlChar *recipient

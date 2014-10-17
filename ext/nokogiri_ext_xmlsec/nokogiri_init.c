@@ -15,8 +15,8 @@ void Init_Nokogiri_ext() {
   rb_cNokogiri_XML_Document = rb_const_get(Nokogiri_XML, rb_intern("Document"));
   rb_cNokogiri_XML_Node = rb_const_get(Nokogiri_XML, rb_intern("Node"));
 
-  rb_define_method(rb_cNokogiri_XML_Document, "sign_with_key",            sign_with_key, -1);
-  rb_define_method(rb_cNokogiri_XML_Document, "sign_with_certificate",    sign_with_certificate, -1);
+  rb_define_method(rb_cNokogiri_XML_Document, "sign_with_key",            sign_with_key, 1);
+  rb_define_method(rb_cNokogiri_XML_Document, "sign_with_certificate",    sign_with_certificate, 1);
   rb_define_method(rb_cNokogiri_XML_Document, "verify_with_rsa_key",      verify_signature_with_rsa_key, 1);
   rb_define_method(rb_cNokogiri_XML_Document, "verify_with_named_keys",   verify_signature_with_named_keys, 1);
   rb_define_method(rb_cNokogiri_XML_Document, "verify_with_certificates", verify_signature_with_certificates, 1);

@@ -4,37 +4,33 @@
 #include "common.h"
 
 #include <ruby.h>
+#include <xmlsec/crypto.h>
 
-// Supported algorithms taken from 5.1 of
+typedef struct {
+  // From :block_encryption
+  xmlSecTransformId block_encryption;
+  const char* key_type;
+  int key_bits;
+
+  // From :key_transport
+  xmlSecTransformId key_transport;
+} XmlEncOptions;
+
+// Supported algorithms taken from #5.1 of
 // http://www.w3.org/TR/xmlenc-core
 //
 // For options, only use the URL fragment (stuff post #)
 // since that's unique enough and it removes a lot of typing.
-typedef enum {
-  TRIPLEDES_CBC,
-  AES128_CBC,
-  AES256_CBC,
-  AES192_CBC,
-} BlockEncryption;
-
-typedef enum {
-  RSA1_5,
-  RSA_OAEP_MGF1P,
-} KeyTransport;
-
-typedef struct {
-  // From :block_encryption
-  BlockEncryption block_encryption;
-
-  // From :key_transport
-  KeyTransport key_transport;
-
-  // From :key_bits
-  int key_bits;
-} XmlEncOptions;
-
 BOOL GetXmlEncOptions(VALUE rb_opts, XmlEncOptions* options,
-                     VALUE* rb_exception_result,
-                     const char** exception_message);
+                      VALUE* rb_exception_result,
+                      const char** exception_message);
+
+// XML DSIG helpers.
+xmlSecTransformId GetSignatureMethod(VALUE rb_method,
+                                     VALUE* rb_exception_result,
+                                     const char** exception_message);
+xmlSecTransformId GetDigestMethod(VALUE rb_digest_method,
+                                  VALUE* rb_exception_result,
+                                  const char** exception_message);
 
 #endif  // NOKOGIRI_EXT_XMLSEC_OPTIONS_H

@@ -9,18 +9,15 @@ class Nokogiri::XML::Document
   #
   #     doc.sign! key: 'rsa-private-key'
   #     doc.sign! key: 'rsa-private-key', name: 'key-name'
-  #     doc.sign! x509: 'x509 certificate', key: 'cert private key'
-  #     doc.sign! x509: 'x509 certificate', key: 'cert private key',
+  #     doc.sign! cert: 'x509 certificate', key: 'cert private key'
+  #     doc.sign! cert: 'x509 certificate', key: 'cert private key',
   #               name: 'key-name'
-  #
-  # You can also use `:cert` or `:certificate` as aliases for `:x509`.
-  #
   def sign! opts
-    if (cert = opts[:x509]) || (cert = opts[:cert]) || (cert = opts[:certificate])
+    if opts.has_key? :cert
       raise "need a private :key" unless opts[:key]
-      sign_with_certificate opts[:name].to_s, opts[:key], cert, opts[:uri]
+      sign_with_certificate opts
     elsif opts[:key]
-      sign_with_key opts[:name].to_s, opts[:key], opts[:uri]
+      sign_with_key opts
     else
       raise "No private :key was given"
     end
@@ -54,11 +51,8 @@ class Nokogiri::XML::Document
   # `:certificates` as aliases for `:x509`.
   #
   def verify_with opts_or_keys
-    if (certs = opts_or_keys[:x509]) ||
-       (certs = opts_or_keys[:cert]) ||
-       (certs = opts_or_keys[:certs]) ||
-       (certs = opts_or_keys[:certificate]) ||
-       (certs = opts_or_keys[:certificates])
+    if (certs = opts_or_keys[:cert]) ||
+       (certs = opts_or_keys[:certs])
       certs = [certs] unless certs.kind_of?(Array)
       verify_with_certificates certs
     elsif opts_or_keys[:key]
