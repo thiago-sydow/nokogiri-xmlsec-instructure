@@ -11,11 +11,11 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Adds support to Ruby for encrypting, decrypting,
     signing and validating the signatures of XML documents, according to the
     [XML Encryption Syntax and Processing](http://www.w3.org/TR/xmlenc-core/)
-    standard, by wrapping around the [xmlsec](http://www.aleksey.com/xmlsec) C
+    standard, and the [XML Signature Syntax and Processing](http://www.w3.org/TR/xmldsig-core/)
+    standard by wrapping around the [xmlsec](http://www.aleksey.com/xmlsec) C
     library and adding relevant methods to `Nokogiri::XML::Document`.
-    Implementation is based off nokogiri-xmlsec by
-    "Colin MacKenzie IV" <inisterchipmunk@gmail.com> with heavy modifications
-    and some API changes.}
+    Implementation is based off nokogiri-xmlsec by Colin MacKenzie IV with
+    very heavy modifications.}
   spec.summary       = %q{Wrapper around http://www.aleksey.com/xmlsec to
     support XML encryption, decryption, signing and signature validation in
     Ruby}
