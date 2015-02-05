@@ -32,7 +32,6 @@ describe "signing and verifying signatures:" do
   describe 'signing a document with an RSA key and X509 certificate' do
     before do
       subject.sign! key: fixture('cert/server.key.decrypted'),
-                    name: 'test',
                     cert: fixture('cert/server.crt'),
                     signature_alg: 'rsa-sha256',
                     digest_alg: 'sha256'

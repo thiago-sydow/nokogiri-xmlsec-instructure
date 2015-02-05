@@ -22,8 +22,7 @@
 // TODO(awong): Support non-gcc and non-clang compilers.
 #define EXTENSION_EXPORT __attribute__((visibility("default")))
 
-VALUE sign_with_key(VALUE self, VALUE rb_opts);
-VALUE sign_with_certificate(VALUE self, VALUE rb_opts);
+VALUE sign(VALUE self, VALUE rb_opts);
 VALUE verify_signature_with_rsa_key(VALUE self, VALUE rb_rsa_key);
 VALUE verify_signature_with_named_keys(VALUE self, VALUE rb_keys);
 VALUE verify_signature_with_certificates(VALUE self, VALUE rb_certs);
