@@ -3,24 +3,8 @@ require 'nokogiri'
 require 'nokogiri_ext_xmlsec'
 
 class Nokogiri::XML::Document
-  # Signs this document, and then returns it.
-  #
-  # Examples:
-  #
-  #     doc.sign! key: 'rsa-private-key'
-  #     doc.sign! key: 'rsa-private-key', name: 'key-name'
-  #     doc.sign! cert: 'x509 certificate', key: 'cert private key'
-  #     doc.sign! cert: 'x509 certificate', key: 'cert private key',
-  #               name: 'key-name'
   def sign! opts
-    if opts.has_key? :cert
-      raise "need a private :key" unless opts[:key]
-      sign_with_certificate opts
-    elsif opts[:key]
-      sign_with_key opts
-    else
-      raise "No private :key was given"
-    end
+    root.sign! opts
     self
   end
 

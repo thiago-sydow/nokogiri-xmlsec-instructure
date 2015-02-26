@@ -40,17 +40,17 @@ then returns itself.
     doc = Nokogiri::XML("<doc><greeting>Hello, World!</greeting></doc>")
 
     # Sign the document with a certificate, a key, and a key name
-    doc.sign! certificate: 'certificate data',
+    doc.sign! cert: 'certificate data',
               key: 'private key data',
-              name: 'private key name'
+              name: 'private key name',
+              digest_alg: 'sha256',
+              signature_alg: 'rsa-sha256'
 
-You only need one of `certificate` or `key`, but you can pass both. If you do,
-the certificate will be included as part of the signature, so that it can be
-later verified by certificate instead of by key.
+If you pass `cert`, the certificate will be included as part of the signature,
+so that it can be later verified by certificate instead of by key.
 
-The `name` is implicitly converted into a string. Thus it is effectively
-optional, since `nil` converts to `""`, and its value only matters if you plan
-to verify the signature with any of a set of keys, as in the following example:
+`name` can be used to verify the signature with any of a set of keys, as in the
+following example:
 
 ### Signature verification
 
@@ -73,11 +73,11 @@ same key, you can do it like so, effectively ignoring the `name` value:
 Finally, you can also verify with a certificate:
 
     # Verify the document's signature with a single certificate
-    doc.verify_with certificate: 'certificate data'
+    doc.verify_with cert: 'certificate data'
 
     # Verify the document's signature with multiple certificates. Any one match
     # will pass verification.
-    doc.verify_with certificates: [ 'cert1', 'cert2', 'cert3' ]
+    doc.verify_with certs: [ 'cert1', 'cert2', 'cert3' ]
 
 If the certificate has been installed to your system certificates, then you can
 verify signatures like so:
@@ -111,8 +111,9 @@ Following is a list of limitations and/or issues I know about, but have no
 immediate plan to resolve. This is probably because I haven't needed the
 functionality, and no one has sent a pull request. (Hint, hint!)
 
-- Currently, it is not possible to operate on individual XML nodes. The
+- Currently, it is not possible to encrypt/decrypt individual XML nodes. The
   `nokogiri-xmlsec` operations must be performed on the entire document.
+  You _can_ sign an individual node.
 
 ## Contributing
 
