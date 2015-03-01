@@ -146,8 +146,6 @@ VALUE sign(VALUE self, VALUE rb_opts) {
     exception_message = "failed to create signature context";
     goto done;
   }
-  //dsigCtx->flags |= XMLSEC_DSIG_FLAGS_STORE_SIGNEDINFO_REFERENCES |
-  //  XMLSEC_DSIG_FLAGS_STORE_MANIFEST_REFERENCES;
 
   // load private key, assuming that there is not password
   dsigCtx->signKey = xmlSecCryptoAppKeyLoadMemory((xmlSecByte *)rsaKey,
@@ -189,7 +187,6 @@ VALUE sign(VALUE self, VALUE rb_opts) {
     exception_message = "signature failed";
     goto done;
   }
-  // xmlSecDSigCtxDebugDump(dsigCtx, stdout);
 
 done:
   if(dsigCtx != NULL) {
