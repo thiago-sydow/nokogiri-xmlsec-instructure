@@ -17,6 +17,9 @@
 //   :name - [optional] String with name of the rsa key.
 //   :uri - [optional] The URI attribute for the <Reference> node in the
 //          signature.
+//   :store_references - [optional] If true, the options hash will be modified,
+//             and this value will be replaced with pre-digest buffer for
+//             debugging purposes
 VALUE sign(VALUE self, VALUE rb_opts) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
@@ -33,8 +36,10 @@ VALUE sign(VALUE self, VALUE rb_opts) {
   char *refUri = NULL;
   unsigned int rsaKeyLength = 0;
   unsigned int certificateLength = 0;
-
-  resetXmlSecError();
+  VALUE rb_references = Qnil;
+  int store_references = 0;
+  VALUE rb_pre_digest_buffer_sym, rb_reference, rb_pre_digest_buffer;
+  xmlSecSize pos;
 
   VALUE rb_rsa_key = rb_hash_aref(rb_opts, ID2SYM(rb_intern("key")));
   VALUE rb_cert = rb_hash_aref(rb_opts, ID2SYM(rb_intern("cert")));
@@ -42,6 +47,9 @@ VALUE sign(VALUE self, VALUE rb_opts) {
   VALUE rb_digest_alg = rb_hash_aref(rb_opts, ID2SYM(rb_intern("digest_alg")));
   VALUE rb_uri = rb_hash_aref(rb_opts, ID2SYM(rb_intern("uri")));
   VALUE rb_key_name = rb_hash_aref(rb_opts, ID2SYM(rb_intern("name")));
+  VALUE rb_store_references = rb_hash_aref(rb_opts, ID2SYM(rb_intern("store_references")));
+
+  resetXmlSecError();
 
   Check_Type(rb_rsa_key, T_STRING);
   Check_Type(rb_signature_alg, T_STRING);
@@ -62,6 +70,17 @@ VALUE sign(VALUE self, VALUE rb_opts) {
   if (!NIL_P(rb_uri)) {
     Check_Type(rb_uri, T_STRING);
     refUri = StringValueCStr(rb_uri);
+  }
+  switch (TYPE(rb_store_references)) {
+    case T_TRUE:
+      store_references = 1;
+      break;
+    case T_FALSE:
+    case T_NIL:
+      break;
+    default:
+      Check_Type(rb_store_references, T_TRUE);
+      break;
   }
 
   xmlSecTransformId signature_algorithm = GetSignatureMethod(rb_signature_alg,
@@ -146,6 +165,10 @@ VALUE sign(VALUE self, VALUE rb_opts) {
     exception_message = "failed to create signature context";
     goto done;
   }
+  if (store_references) {
+    dsigCtx->flags |= XMLSEC_DSIG_FLAGS_STORE_SIGNEDINFO_REFERENCES |
+      XMLSEC_DSIG_FLAGS_STORE_MANIFEST_REFERENCES;
+  }
 
   // load private key, assuming that there is not password
   dsigCtx->signKey = xmlSecCryptoAppKeyLoadMemory((xmlSecByte *)rsaKey,
@@ -186,6 +209,22 @@ VALUE sign(VALUE self, VALUE rb_opts) {
     rb_exception_result = rb_eSigningError;
     exception_message = "signature failed";
     goto done;
+  }
+  if (store_references) {
+    rb_pre_digest_buffer_sym = ID2SYM(rb_intern("pre_digest_buffer"));
+    rb_references = rb_ary_new2(xmlSecPtrListGetSize(&dsigCtx->signedInfoReferences));
+    rb_hash_aset(rb_opts, ID2SYM(rb_intern("references")), rb_references);
+
+    for(pos = 0; pos < xmlSecPtrListGetSize(&dsigCtx->signedInfoReferences); ++pos) {
+      rb_reference = rb_hash_new();
+      rb_ary_push(rb_references, rb_reference);
+      xmlSecDSigReferenceCtxPtr dsigRefCtx = (xmlSecDSigReferenceCtxPtr)xmlSecPtrListGetItem(&dsigCtx->signedInfoReferences, pos);
+      xmlSecBufferPtr pre_digest_buffer = xmlSecDSigReferenceCtxGetPreDigestBuffer(dsigRefCtx);
+      if (pre_digest_buffer && xmlSecBufferGetData(pre_digest_buffer)) {
+        rb_pre_digest_buffer = rb_str_new((const char *)xmlSecBufferGetData(pre_digest_buffer), xmlSecBufferGetSize(pre_digest_buffer));
+        rb_hash_aset(rb_reference, rb_pre_digest_buffer_sym, rb_pre_digest_buffer);
+      }
+    }
   }
 
 done:
