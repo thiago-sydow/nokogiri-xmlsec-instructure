@@ -28,6 +28,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_rsa_key_name, VALUE rb_rsa_key,
                        VALUE rb_opts);
 VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key);
 VALUE set_id_attribute(VALUE self, VALUE rb_attr_name);
+VALUE get_id(VALUE self, VALUE rb_id);
 
 void Init_Nokogiri_ext(void);
 
