@@ -7,7 +7,7 @@ end
 barf unless have_header('ruby.h')
 
 pkg_config('xmlsec1')
-
+$CFLAGS << " " + `xmlsec1-config  --cflags`.strip
 $CFLAGS << " -fvisibility=hidden"
 
 if $CFLAGS =~ /\-DXMLSEC_CRYPTO=\\\\\\"openssl\\\\\\"/
