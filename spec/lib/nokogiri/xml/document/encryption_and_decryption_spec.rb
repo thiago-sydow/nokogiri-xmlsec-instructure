@@ -22,7 +22,7 @@ describe "encryption and decryption:" do
 
         describe 'decrypting with the RSA private key' do
           before do
-            subject.decrypt! key: fixture('rsa.pem'), name: 'test'
+            subject.decrypt! key: fixture('rsa.pem')
           end
 
           specify { expect(subject.to_s == fixture('sign2-doc.xml')).to be_truthy }

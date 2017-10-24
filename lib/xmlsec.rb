@@ -71,13 +71,27 @@ class Nokogiri::XML::Document
   #
   #     # decrypt with a specific private key
   #     doc.decrypt! key: 'private-key'
+  #     # pass the key as an OpenSSL PKey object
+  #     doc.decrypt! key: OpenSSL::PKey.read('private-key')
   #
   def decrypt! opts
-    if opts[:key]
-      decrypt_with_key opts[:name].to_s, opts[:key]
-    else
-      raise 'inadequate options specified for decryption'
-    end
+    first_encrypted_node = root.at_xpath("//xenc:EncryptedData", 'xenc' => "http://www.w3.org/2001/04/xmlenc#")
+    raise XMLSec::DecryptionError("start node not found") unless first_encrypted_node
+
+    first_encrypted_node.decrypt_with opts
     self
+  end
+end
+
+class Nokogiri::XML::Node
+  def decrypt_with(opts)
+    raise 'inadequate options specified for decryption' unless opts[:key]
+
+    parent = self.parent
+    previous = self.previous
+    key = opts[:key]
+    key = key.to_pem if key.respond_to?(:to_pem)
+    decrypt_with_key(opts[:name].to_s, key)
+    previous ? previous.next : parent.children.first
   end
 end

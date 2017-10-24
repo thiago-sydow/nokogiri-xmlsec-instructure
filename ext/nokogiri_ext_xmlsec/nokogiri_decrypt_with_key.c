@@ -5,7 +5,6 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
 
-  xmlDocPtr doc = NULL;
   xmlNodePtr node = NULL;
   xmlSecEncCtxPtr encCtx = NULL;
   xmlSecKeysMngrPtr keyManager = NULL;
@@ -17,18 +16,10 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
 
   Check_Type(rb_key,      T_STRING);
   Check_Type(rb_key_name, T_STRING);
-  Data_Get_Struct(self, xmlDoc, doc);
+  Data_Get_Struct(self, xmlNode, node);
   key       = RSTRING_PTR(rb_key);
   keyLength = RSTRING_LEN(rb_key);
   keyName = StringValueCStr(rb_key_name);
-
-  // find start node
-  node = xmlSecFindNode(xmlDocGetRootElement(doc), xmlSecNodeEncryptedData, xmlSecEncNs);
-  if(node == NULL) {
-      rb_exception_result = rb_eDecryptionError;
-      exception_message = "start node not found";
-      goto done;      
-  }
 
   keyManager = createKeyManagerWithSingleKey(key, keyLength, keyName,
                                              &rb_exception_result,
@@ -45,6 +36,8 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
     exception_message = "failed to create encryption context";
     goto done;
   }
+  // don't let xmlsec free the node we're looking at out from under us
+  encCtx->flags |= XMLSEC_ENC_RETURN_REPLACED_NODE;
 
   // decrypt the data
   if((xmlSecEncCtxDecrypt(encCtx, node) < 0) || (encCtx->result == NULL)) {
@@ -59,9 +52,16 @@ VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
     goto done;
   }
 
-done:    
+done:
   // cleanup
   if(encCtx != NULL) {
+    // the replaced node is orphaned, but not freed; let Nokogiri
+    // own it now
+    if(encCtx->replacedNodeList != NULL) {
+      nokogiri_root_node(encCtx->replacedNodeList);
+      // no really, please don't free it
+      encCtx->replacedNodeList = NULL;
+    }
     xmlSecEncCtxDestroy(encCtx);
   }
   
