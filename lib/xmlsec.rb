@@ -25,14 +25,15 @@ class Nokogiri::XML::Document
   #     })
   #     
   #     # Try to validate with a trusted certificate
-  #     doc.verify_with(x509: 'certificate')
+  #     doc.verify_with(cert: 'certificate')
   #
   #     # Try to validate with a set of certificates, any one of which
   #     # can match
-  #     doc.verify_with(x509: ['cert1', 'cert2'])
+  #     doc.verify_with(certs: ['cert1', 'cert2'])
   #
-  # You can also use `:cert` or `:certificate` or `:certs` or
-  # `:certificates` as aliases for `:x509`.
+  #     # Validate the signature, checking the certificate validity as of
+  #     # a certain time (anything that's convertible to an integer, such as a Time)
+  #     doc.verify_with(cert: 'certificate', verification_time: message_creation_timestamp)
   #
   def verify_with opts_or_keys
     first_signature = root.at_xpath("//ds:Signature", 'ds' => "http://www.w3.org/2000/09/xmldsig#")

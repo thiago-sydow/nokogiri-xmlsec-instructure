@@ -32,6 +32,7 @@ static xmlSecKeysMngrPtr createKeyManagerWithRbCertArray(
 
   for (i = 0; i < numCerts; i++) {
     rb_cert = RARRAY_PTR(rb_certs)[i];
+    rb_cert = rb_obj_as_string(rb_cert);
     Check_Type(rb_cert, T_STRING);
     cert = RSTRING_PTR(rb_cert);
     certLength = RSTRING_LEN(rb_cert);
@@ -137,6 +138,7 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
   xmlSecKeysMngrPtr keyManager = NULL;
   VALUE rb_certs, rb_cert;
   VALUE rb_rsa_key;
+  VALUE rb_verification_time;
   char *rsa_key = NULL;
   unsigned int rsa_key_length = 0;
   VALUE result = Qfalse;
@@ -157,6 +159,8 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
   if (NIL_P(rb_certs)) {
     rb_certs = rb_hash_aref(rb_opts, ID2SYM(rb_intern("certs")));
   }
+
+  rb_verification_time = rb_hash_aref(rb_opts, ID2SYM(rb_intern("verification_time")));
 
   if (!NIL_P(rb_certs)) {
     if(TYPE(rb_certs) != T_ARRAY) {
@@ -190,6 +194,11 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
     rb_exception_result = rb_eVerificationError;
     exception_message = "failed to create signature context";
     goto done;
+  }
+
+  if(!NIL_P(rb_verification_time)) {
+    rb_verification_time = rb_Integer(rb_verification_time);
+    dsigCtx->keyInfoReadCtx.certsVerificationTime = (time_t)NUM2LONG(rb_verification_time);
   }
 
   if(rsa_key) {
