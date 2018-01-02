@@ -35,6 +35,10 @@ class Nokogiri::XML::Document
   #     # a certain time (anything that's convertible to an integer, such as a Time)
   #     doc.verify_with(cert: 'certificate', verification_time: message_creation_timestamp)
   #
+  #     # Validate the signature, but don't validate that the certificate is valid,
+  #     # or has a full trust chain
+  #     doc.verify_with(cert: 'certificate', verify_certificates: false)
+  #
   def verify_with opts_or_keys
     first_signature = root.at_xpath("//ds:Signature", 'ds' => "http://www.w3.org/2000/09/xmldsig#")
     raise XMLSec::VerificationError("start node not found") unless first_signature

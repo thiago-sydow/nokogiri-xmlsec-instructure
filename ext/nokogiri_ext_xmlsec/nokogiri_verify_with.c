@@ -138,7 +138,7 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
   xmlSecKeysMngrPtr keyManager = NULL;
   VALUE rb_certs, rb_cert;
   VALUE rb_rsa_key;
-  VALUE rb_verification_time;
+  VALUE rb_verification_time, rb_verification_depth, rb_verify_certificates;
   char *rsa_key = NULL;
   unsigned int rsa_key_length = 0;
   VALUE result = Qfalse;
@@ -160,7 +160,9 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
     rb_certs = rb_hash_aref(rb_opts, ID2SYM(rb_intern("certs")));
   }
 
+  rb_verification_depth = rb_hash_aref(rb_opts, ID2SYM(rb_intern("verification_depth")));
   rb_verification_time = rb_hash_aref(rb_opts, ID2SYM(rb_intern("verification_time")));
+  rb_verify_certificates = rb_hash_aref(rb_opts, ID2SYM(rb_intern("verify_certificates")));
 
   if (!NIL_P(rb_certs)) {
     if(TYPE(rb_certs) != T_ARRAY) {
@@ -199,6 +201,15 @@ VALUE verify_with(VALUE self, VALUE rb_opts) {
   if(!NIL_P(rb_verification_time)) {
     rb_verification_time = rb_Integer(rb_verification_time);
     dsigCtx->keyInfoReadCtx.certsVerificationTime = (time_t)NUM2LONG(rb_verification_time);
+  }
+
+  if(rb_verify_certificates == Qfalse) {
+    dsigCtx->keyInfoReadCtx.flags |= XMLSEC_KEYINFO_FLAGS_X509DATA_DONT_VERIFY_CERTS;
+  }
+
+  if(!NIL_P(rb_verification_depth)) {
+    rb_verification_depth = rb_Integer(rb_verification_depth);
+    dsigCtx->keyInfoReadCtx.certsVerificationDepth = (time_t)NUM2LONG(rb_verification_depth);
   }
 
   if(rsa_key) {
