@@ -4,10 +4,10 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'xmlsec/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "nokogiri-xmlsec-me-harder"
+  spec.name          = "nokogiri-xmlsec-instructure"
   spec.version       = Xmlsec::VERSION
-  spec.authors       = ["Albert J. Wong"]
-  spec.email         = ["awong.dev@gmail.com"]
+  spec.authors       = ["Albert J. Wong", "Cody Cutrer"]
+  spec.email         = ["awong.dev@gmail.com", "cody@instructure.com"]
   spec.description   = %q{Adds support to Ruby for encrypting, decrypting,
     signing and validating the signatures of XML documents, according to the
     [XML Encryption Syntax and Processing](http://www.w3.org/TR/xmlenc-core/)
@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Wrapper around http://www.aleksey.com/xmlsec to
     support XML encryption, decryption, signing and signature validation in
     Ruby}
-  spec.homepage      = "https://github.com/awong-dev/nokogiri-xmlsec-me-harder"
+  spec.homepage      = "https://github.com/instructure/nokogiri-xmlsec-instructure"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
