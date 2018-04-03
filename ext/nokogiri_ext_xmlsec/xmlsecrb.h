@@ -18,6 +18,7 @@
 #include <xmlsec/xmlenc.h>
 #include <xmlsec/templates.h>
 #include <xmlsec/crypto.h>
+#include <xmlsec/errors.h>
 
 // TODO(awong): Support non-gcc and non-clang compilers.
 #define EXTENSION_EXPORT __attribute__((visibility("default")))

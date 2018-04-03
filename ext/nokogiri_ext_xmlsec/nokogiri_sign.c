@@ -232,6 +232,8 @@ done:
     xmlSecDSigCtxDestroy(dsigCtx);
   }
 
+  xmlSecErrorsSetCallback(xmlSecErrorsDefaultCallback);
+
   if(rb_exception_result != Qnil) {
     // remove the signature node before raising an exception, so that
     // the document is untouched

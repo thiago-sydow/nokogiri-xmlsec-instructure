@@ -56,6 +56,8 @@ done:
     xmlFree(name);
   }
 
+  xmlSecErrorsSetCallback(xmlSecErrorsDefaultCallback);
+
   if(rb_exception_result != Qnil) {
     if (exception_attribute_arg) {
       if (hasXmlSecLastError()) {
