@@ -102,6 +102,7 @@ int hasXmlSecLastError() {
 void resetXmlSecError() {
   g_errorStack[0] = '\0';
   g_errorStackPos = 0;
+  xmlSecErrorsSetCallback(storeErrorCallback);
 }
 
 void storeErrorCallback(const char *file,

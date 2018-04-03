@@ -69,6 +69,8 @@ done:
     xmlSecKeysMngrDestroy(keyManager);
   }
 
+  xmlSecErrorsSetCallback(xmlSecErrorsDefaultCallback);
+
   if(rb_exception_result != Qnil) {
     if (hasXmlSecLastError()) {
       rb_raise(rb_exception_result, "%s, XmlSec error: %s", exception_message,

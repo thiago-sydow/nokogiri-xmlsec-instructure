@@ -66,10 +66,6 @@ void Init_nokogiri_ext_xmlsec() {
     rb_raise(rb_eRuntimeError, "xmlsec-crypto initialization failed");
   }
 
-  // Set Error callback catcher last because various modules also call this.
-  // This way we always win.
-  xmlSecErrorsSetCallback(storeErrorCallback);
-
   /* ruby classes & objects */
   Init_Nokogiri_ext();
 }
