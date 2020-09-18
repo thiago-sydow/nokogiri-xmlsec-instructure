@@ -1,6 +1,11 @@
 #include "xmlsecrb.h"
 #include "util.h"
 
+// technically we should include nokogiri.h, but we don't know
+// how to find it. we _know_ this function will exist at runtime
+// though, so just declare it here
+void nokogiri_root_node(xmlNodePtr);
+
 VALUE decrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   VALUE rb_exception_result = Qnil;
   const char* exception_message = NULL;
