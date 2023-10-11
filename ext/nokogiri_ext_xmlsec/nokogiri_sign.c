@@ -93,7 +93,7 @@ VALUE sign(VALUE self, VALUE rb_opts) {
   Noko_Node_Get_Struct(self, xmlNode, envelopeNode);
   doc = envelopeNode->doc;
   // create signature template for enveloped signature.
-  signNode = xmlSecTmplSignatureCreate(doc, xmlSecTransformExclC14NId,
+  signNode = xmlSecTmplSignatureCreate(doc, xmlSecTransformInclC14NId,
                                        signature_algorithm, NULL);
   if (signNode == NULL) {
     rb_exception_result = rb_eSigningError;
@@ -126,7 +126,7 @@ VALUE sign(VALUE self, VALUE rb_opts) {
     goto done;
   }
 
-  if(xmlSecTmplReferenceAddTransform(refNode, xmlSecTransformExclC14NId) == NULL) {
+  if(xmlSecTmplReferenceAddTransform(refNode, xmlSecTransformInclC14NId) == NULL) {
     rb_exception_result = rb_eSigningError;
     exception_message = "failed to add canonicalization transform to reference";
     goto done;
